@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -7,12 +6,15 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         {/* Coluna 1: Marca & Resumo */}
         <div className="md:col-span-2 flex flex-col gap-4">
-          <div className="relative h-10 w-44">
-            <Image
+          <div className="h-10 w-44 flex items-center">
+            <img
               src="/images/logo.png"
               alt="Epopeia do Fim"
-              fill
-              className="object-contain object-left"
+              width={176}
+              height={40}
+              loading="eager"
+              decoding="sync"
+              className="h-10 w-auto object-contain"
             />
           </div>
           <p className="text-xs md:text-sm text-slate-400 max-w-sm leading-relaxed">
