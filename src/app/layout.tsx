@@ -24,7 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${inter.variable} ${cinzel.variable}`}>
-      <body className="bg-[#0b101b] text-gray-100 font-sans antialiased min-h-screen">
+      <body
+        suppressHydrationWarning
+        className="bg-[#0b101b] text-gray-100 font-sans antialiased min-h-screen"
+      >
         {children}
       </body>
     </html>

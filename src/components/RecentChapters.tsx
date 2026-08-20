@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { RECENT_CHAPTERS } from "../data/chapters";
+import { RECENT_CHAPTERS, Chapter } from "../data/chapters";
 
 export default function RecentChapters() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
-      {/* Cabeçalho da Seção */}
+      {/* Cabeçalho */}
       <div className="flex items-end justify-between mb-8 border-b border-amber-500/20 pb-4">
         <div>
           <span className="text-xs font-semibold tracking-widest text-amber-400 uppercase">
@@ -29,7 +29,7 @@ export default function RecentChapters() {
 
       {/* Grid de Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {RECENT_CHAPTERS.map((chap) => (
+        {RECENT_CHAPTERS.map((chap: Chapter) => (
           <Link
             key={chap.id}
             href={`/capitulos/${chap.slug}`}
