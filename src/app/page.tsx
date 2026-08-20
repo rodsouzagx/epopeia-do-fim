@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import Hero from "../components/Hero";
 import RecentChapters from "../components/RecentChapters";
 import LatestNews from "../components/LatestNews";
+import Footer from "../components/Footer";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
         <RecentChapters />
         <LatestNews />
       </main>
+      <Footer />
     </div>
   );
 }
