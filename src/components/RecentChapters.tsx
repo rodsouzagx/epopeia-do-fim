@@ -1,7 +1,49 @@
 import Link from "next/link";
-import { RECENT_CHAPTERS, Chapter } from "../data/chapters";
+import Image from "next/image";
+import { getSanityVolumesWithChapters } from "../sanity/queries";
+import { urlFor } from "../sanity/client";
+import { RECENT_CHAPTERS } from "../data/chapters";
 
-export default function RecentChapters() {
+export default async function RecentChapters() {
+  let volumes: any[] = [];
+  try {
+    volumes = await getSanityVolumesWithChapters();
+  } catch (error) {
+    console.error("Erro ao carregar capítulos recentes do Sanity:", error);
+  }
+
+  // Extrai os capítulos e anexa os dados/capa do volume correspondente
+  let chapters: any[] = [];
+  if (volumes && volumes.length > 0) {
+    chapters = volumes
+      .flatMap((v) =>
+        (v.chapters || []).map((c: any) => ({
+          _id: c._id,
+          title: c.title,
+          slug: c.slug,
+          number: c.chapterNumber,
+          releaseDate: c.releaseDate,
+          isNew: c.isNew,
+          volumeNumber: v.volumeNumber,
+          coverImage: v.coverImage,
+        })),
+      )
+      .reverse();
+  } else {
+    chapters = RECENT_CHAPTERS.map((c) => ({
+      _id: c.id,
+      title: c.title,
+      slug: c.slug,
+      number: c.number,
+      releaseDate: c.releaseDate,
+      isNew: c.isNew,
+      volumeNumber: c.volume,
+      coverImage: null,
+    }));
+  }
+
+  const recentList = chapters.slice(0, 3);
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
       {/* Cabeçalho */}
@@ -27,34 +69,49 @@ export default function RecentChapters() {
         </Link>
       </div>
 
-      {/* Grid de Cards */}
+      {/* Grid de Cards com Miniatura do Volume */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {RECENT_CHAPTERS.map((chap: Chapter) => (
+        {recentList.map((chap: any, idx: number) => (
           <Link
-            key={chap.id}
+            key={chap._id || chap.slug || idx}
             href={`/capitulos/${chap.slug}`}
-            className="group relative p-6 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-amber-500/50 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-900/80 flex flex-col justify-between"
+            className="group relative p-4 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-amber-500/50 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-900/80 flex flex-col justify-between"
           >
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="text-xs font-medium tracking-wider text-slate-400 uppercase">
-                  Volume {chap.volume} • Cap. {chap.number}
-                </span>
-                {chap.isNew && (
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    Novo
-                  </span>
-                )}
-              </div>
+            <div className="flex gap-4 items-start">
+              {/* Miniatura da Capa do Volume */}
+              {chap.coverImage && (
+                <div className="shrink-0 w-16 h-24 rounded-lg overflow-hidden border border-amber-500/20 relative shadow-md">
+                  <Image
+                    src={urlFor(chap.coverImage).url()}
+                    alt={`Capa Volume ${chap.volumeNumber}`}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              )}
 
-              <h3 className="text-lg font-semibold text-slate-100 group-hover:text-amber-300 transition-colors line-clamp-2">
-                {chap.title}
-              </h3>
+              {/* Informações do Capítulo */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <span className="text-[11px] font-medium tracking-wider text-slate-400 uppercase">
+                    Vol. {chap.volumeNumber} • Cap. {chap.number}
+                  </span>
+                  {chap.isNew && (
+                    <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500 text-slate-950">
+                      Novo
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="text-sm font-semibold text-slate-100 group-hover:text-amber-300 transition-colors line-clamp-2 leading-snug">
+                  {chap.title}
+                </h3>
+              </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-              <span>{chap.releaseDate}</span>
-              <span className="font-medium text-amber-400/80 group-hover:text-amber-300 transition-colors">
+            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+              <span className="text-[11px] font-mono">{chap.releaseDate}</span>
+              <span className="font-medium text-amber-400/80 group-hover:text-amber-300 transition-colors text-[11px]">
                 Ler capítulo →
               </span>
             </div>

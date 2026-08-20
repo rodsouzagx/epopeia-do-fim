@@ -1,6 +1,6 @@
 import { defineField, defineType } from "sanity";
 
-export default defineType({
+export const lore = defineType({
   name: "lore",
   title: "Universo & Lore",
   type: "document",
