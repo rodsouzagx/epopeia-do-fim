@@ -23,7 +23,7 @@ export async function getSanityVolumesWithChapters() {
       }
     }`,
     {},
-    { cache: "no-store" },
+    { next: { revalidate: 60 } },
   );
 }
 
@@ -48,7 +48,7 @@ export async function getSanityChapters() {
       }
     }`,
     {},
-    { cache: "no-store" },
+    { next: { revalidate: 60 } },
   );
 }
 
@@ -72,7 +72,7 @@ export async function getSanityChapterBySlug(slug: string) {
       }
     }`,
     {},
-    { cache: "no-store" },
+    { next: { revalidate: 60 } },
   );
 
   if (!allChapters || allChapters.length === 0) return null;
@@ -85,7 +85,6 @@ export async function getSanityChapterBySlug(slug: string) {
   return {
     chapter: {
       ...current,
-      // Se o capítulo tiver imagem própria, usa ela; se não, usa a capa oficial do volume!
       displayImage: current.chapterImage || current.volume?.coverImage || null,
       volumeNumber: current.volume?.volumeNumber || 1,
       volumeTitle: current.volume?.title || "Volume Principal",
@@ -111,7 +110,27 @@ export async function getSanityLore() {
       image
     }`,
     {},
-    { cache: "no-store" },
+    { next: { revalidate: 60 } },
+  );
+}
+
+// Buscar item específico de Lore por Slug
+export async function getSanityLoreBySlug(slug: string) {
+  return await client.fetch(
+    groq`*[_type == "lore" && slug.current == $slug][0] {
+      _id,
+      name,
+      "slug": slug.current,
+      category,
+      title,
+      affinity,
+      quote,
+      description,
+      details,
+      image
+    }`,
+    { slug },
+    { next: { revalidate: 60 } },
   );
 }
 
@@ -128,7 +147,7 @@ export async function getSanityNews() {
       content
     }`,
     {},
-    { cache: "no-store" },
+    { next: { revalidate: 60 } },
   );
 }
 
@@ -145,6 +164,6 @@ export async function getSanityNewsBySlug(slug: string) {
       content
     }`,
     { slug },
-    { cache: "no-store" },
+    { next: { revalidate: 60 } },
   );
 }

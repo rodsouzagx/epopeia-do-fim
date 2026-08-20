@@ -1,17 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[580px] flex items-center justify-center overflow-hidden border-b border-amber-500/15">
-      {/* Banner de fundo */}
+    <section className="relative min-h-[580px] flex items-center justify-center overflow-hidden border-b border-amber-500/15 bg-[#070b14]">
+      {/* Banner de fundo com img nativa - ZERO piscada */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/banner.png"
+        <img
+          src="/images/banner.jpg"
           alt="Banner Epopeia do Fim"
-          fill
-          priority
-          className="object-cover object-center opacity-40 scale-105"
+          className="w-full h-full object-cover object-center opacity-40 scale-105"
+          loading="eager"
+          decoding="sync"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#070b14] via-[#070b14]/60 to-[#070b14]/80" />
       </div>

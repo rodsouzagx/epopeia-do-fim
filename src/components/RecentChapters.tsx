@@ -2,51 +2,38 @@ import Link from "next/link";
 import Image from "next/image";
 import { getSanityVolumesWithChapters } from "../sanity/queries";
 import { urlFor } from "../sanity/client";
-import { RECENT_CHAPTERS } from "../data/chapters";
 
 export default async function RecentChapters() {
   let volumes: any[] = [];
   try {
-    volumes = await getSanityVolumesWithChapters();
+    volumes = (await getSanityVolumesWithChapters()) || [];
   } catch (error) {
     console.error("Erro ao carregar capítulos recentes do Sanity:", error);
   }
 
-  // Extrai os capítulos e anexa os dados/capa do volume correspondente
-  let chapters: any[] = [];
-  if (volumes && volumes.length > 0) {
-    chapters = volumes
-      .flatMap((v) =>
-        (v.chapters || []).map((c: any) => ({
-          _id: c._id,
-          title: c.title,
-          slug: c.slug,
-          number: c.chapterNumber,
-          releaseDate: c.releaseDate,
-          isNew: c.isNew,
-          volumeNumber: v.volumeNumber,
-          coverImage: v.coverImage,
-        })),
-      )
-      .reverse();
-  } else {
-    chapters = RECENT_CHAPTERS.map((c) => ({
-      _id: c.id,
-      title: c.title,
-      slug: c.slug,
-      number: c.number,
-      releaseDate: c.releaseDate,
-      isNew: c.isNew,
-      volumeNumber: c.volume,
-      coverImage: null,
-    }));
-  }
+  const chapters = volumes
+    .flatMap((v) =>
+      (v.chapters || []).map((c: any) => ({
+        _id: c._id,
+        title: c.title,
+        slug: c.slug,
+        number: c.chapterNumber,
+        releaseDate: c.releaseDate,
+        isNew: c.isNew,
+        volumeNumber: v.volumeNumber,
+        coverImage: v.coverImage,
+      })),
+    )
+    .reverse();
 
   const recentList = chapters.slice(0, 3);
 
+  if (recentList.length === 0) {
+    return null;
+  }
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
-      {/* Cabeçalho */}
       <div className="flex items-end justify-between mb-8 border-b border-amber-500/20 pb-4">
         <div>
           <span className="text-xs font-semibold tracking-widest text-amber-400 uppercase">
@@ -69,7 +56,6 @@ export default async function RecentChapters() {
         </Link>
       </div>
 
-      {/* Grid de Cards com Miniatura do Volume */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {recentList.map((chap: any, idx: number) => (
           <Link
@@ -78,19 +64,25 @@ export default async function RecentChapters() {
             className="group relative p-4 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-amber-500/50 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-900/80 flex flex-col justify-between"
           >
             <div className="flex gap-4 items-start">
-              {/* Miniatura da Capa do Volume */}
+              {/* Miniatura Otimizada (sem piscada) */}
               {chap.coverImage && (
-                <div className="shrink-0 w-16 h-24 rounded-lg overflow-hidden border border-amber-500/20 relative shadow-md">
+                <div className="shrink-0 w-16 h-24 rounded-lg overflow-hidden border border-amber-500/20 relative shadow-md bg-slate-950">
                   <Image
-                    src={urlFor(chap.coverImage).url()}
+                    src={urlFor(chap.coverImage)
+                      .width(120)
+                      .height(180)
+                      .auto("format")
+                      .quality(80)
+                      .url()}
                     alt={`Capa Volume ${chap.volumeNumber}`}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="64px"
+                    priority={idx === 0}
+                    className="object-cover"
                   />
                 </div>
               )}
 
-              {/* Informações do Capítulo */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1 mb-1.5">
                   <span className="text-[11px] font-medium tracking-wider text-slate-400 uppercase">

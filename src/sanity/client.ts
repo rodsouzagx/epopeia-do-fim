@@ -3,13 +3,16 @@ import imageUrlBuilder from "@sanity/image-url";
 
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2026-08-19",
-  useCdn: false, // false para garantir dados frescos no painel
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",
+  apiVersion: "2024-01-01",
+  useCdn: true,
 });
 
-// Utilitário para gerar URLs otimizadas de imagens
-const builder = imageUrlBuilder(client);
+// Passa o projectId e dataset diretamente (remove o aviso de depreciado)
+const builder = imageUrlBuilder({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",
+});
 
 export function urlFor(source: any) {
   return builder.image(source);

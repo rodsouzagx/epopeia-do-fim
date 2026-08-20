@@ -1,18 +1,82 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import ReaderControls from "../../../components/ReaderControls";
 import SanityPortableText from "../../../components/SanityPortableText";
 import { getSanityChapterBySlug } from "../../../sanity/queries";
-import { urlFor } from "../../../sanity/client";
+import { client, urlFor } from "../../../sanity/client";
 import { ALL_CHAPTERS, Chapter } from "../../../data/chapters";
+import { groq } from "next-sanity";
 
-export const dynamic = "force-dynamic";
+// Mantém cache incremental rápido de 60 segundos
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+// Pré-renderiza todos os capítulos no momento do build
+export async function generateStaticParams() {
+  try {
+    const slugs: string[] = await client.fetch(
+      groq`*[_type == "chapter" && defined(slug.current)][].slug.current`,
+    );
+
+    if (slugs && slugs.length > 0) {
+      return slugs.map((slug) => ({ slug }));
+    }
+  } catch (error) {
+    console.error("Erro ao gerar static params de Capítulos:", error);
+  }
+
+  // Fallback caso a API não responda durante o build
+  return ALL_CHAPTERS.map((chapter) => ({
+    slug: chapter.slug,
+  }));
+}
+
+// Metadados dinâmicos para SEO, WhatsApp, Twitter/X e Discord
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  let data: any = null;
+  try {
+    data = await getSanityChapterBySlug(slug);
+  } catch (e) {
+    console.error("Erro ao gerar metadados:", e);
+  }
+
+  const chapter = data?.chapter;
+
+  if (!chapter) {
+    return {
+      title: "Capítulo | Epopeia do Fim",
+    };
+  }
+
+  const title = `${chapter.title} - Vol. ${chapter.volumeNumber} | Epopeia do Fim`;
+  const description = `Leia o capítulo ${chapter.chapterNumber}: ${chapter.title} da web novel Epopeia do Fim.`;
+  const imageUrl = chapter.displayImage
+    ? urlFor(chapter.displayImage).width(1200).height(630).url()
+    : undefined;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: chapter.title }] : [],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : [],
+    },
+  };
 }
 
 export default async function ChapterReaderPage({ params }: PageProps) {
@@ -78,14 +142,19 @@ export default async function ChapterReaderPage({ params }: PageProps) {
         {/* Capa do Volume / Ilustração do Capítulo */}
         {chapter.displayImage && (
           <div className="flex justify-center mb-10">
-            <div className="inline-block rounded-2xl overflow-hidden border-2 border-amber-500/40 shadow-2xl shadow-amber-950/20">
-              <Image
-                src={urlFor(chapter.displayImage).url()}
+            <div className="w-64 sm:w-72 md:w-80 h-96 sm:h-[430px] md:h-[480px] rounded-2xl overflow-hidden border-2 border-amber-500/40 shadow-2xl shadow-amber-950/20 bg-slate-900">
+              <img
+                src={urlFor(chapter.displayImage)
+                  .width(640)
+                  .height(960)
+                  .fit("crop")
+                  .auto("format")
+                  .quality(85)
+                  .url()}
                 alt={chapter.title}
-                width={400}
-                height={600}
-                className="w-auto max-h-[500px] object-contain rounded-2xl"
-                priority
+                className="w-full h-full object-cover"
+                loading="eager"
+                decoding="sync"
               />
             </div>
           </div>

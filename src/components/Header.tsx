@@ -26,13 +26,13 @@ export default function Header() {
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[#070b14]/80 border-b border-amber-500/15">
       <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <div className="relative h-14 w-60">
-            <Image
+          <div className="relative h-14 w-60 flex items-center">
+            <img
               src="/images/logo.png"
               alt="Epopeia do Fim"
-              fill
-              priority
-              className="object-contain object-left"
+              className="w-full h-full object-contain object-left"
+              loading="eager"
+              decoding="sync"
             />
           </div>
         </Link>
