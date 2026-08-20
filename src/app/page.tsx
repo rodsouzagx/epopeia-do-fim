@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import Hero from "../components/Hero";
 import RecentChapters from "../components/RecentChapters";
+import LatestNews from "../components/LatestNews";
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <RecentChapters />
+        <LatestNews />
       </main>
     </div>
   );
