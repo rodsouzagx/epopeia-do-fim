@@ -4,3 +4,6 @@
   --font-inter: "Inter", sans-serif;
   --font-cinzel: "Cinzel", serif;
 }
+button {
+  cursor: pointer;
+}
