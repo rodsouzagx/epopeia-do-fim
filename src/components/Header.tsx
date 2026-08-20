@@ -30,6 +30,9 @@ export default function Header() {
           <Link href="/noticias" className="hover:text-amber-300 transition-colors">
             Notícias
           </Link>
+          <Link href="/sobre" className="hover:text-amber-300 transition-colors">
+            Sobre
+          </Link>
         </nav>
       </div>
     </header>
