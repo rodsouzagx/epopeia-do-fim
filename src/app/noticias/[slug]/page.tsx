@@ -1,21 +1,40 @@
-import { use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PortableText } from "@portabletext/react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
+import { getSanityNewsBySlug } from "../../../sanity/queries";
 import { LATEST_NEWS } from "../../../data/news";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default function NewsDetailPage({ params }: PageProps) {
-  const resolvedParams = use(params);
-  const newsItem = LATEST_NEWS.find((n) => n.slug === resolvedParams.slug);
+export default async function NewsDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+
+  // 1. Tenta buscar no Sanity
+  let newsItem: any = null;
+  try {
+    newsItem = await getSanityNewsBySlug(slug);
+  } catch (error) {
+    console.error("Erro ao buscar notícia no Sanity:", error);
+  }
+
+  // 2. Fallback para os dados estáticos locais se não encontrar no Sanity
+  if (!newsItem) {
+    newsItem = LATEST_NEWS.find((n) => n.slug === slug);
+  }
 
   if (!newsItem) {
     notFound();
   }
+
+  // Verifica se o conteúdo é o formato Block Content do Sanity (array de objetos com _type)
+  const isPortableText =
+    Array.isArray(newsItem.content) &&
+    newsItem.content.length > 0 &&
+    typeof newsItem.content[0] === "object";
 
   return (
     <div className="flex flex-col min-h-screen bg-[#070b14] text-slate-100">
@@ -47,11 +66,16 @@ export default function NewsDetailPage({ params }: PageProps) {
             </h1>
           </header>
 
-          {/* Conteúdo */}
+          {/* Conteúdo Renderizado (Sanity PortableText ou Array de Strings) */}
           <div className="flex flex-col gap-6 text-slate-300 leading-relaxed text-base font-light">
-            {newsItem.content.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+            {isPortableText ? (
+              <PortableText value={newsItem.content} />
+            ) : (
+              Array.isArray(newsItem.content) &&
+              newsItem.content.map((paragraph: string, index: number) => (
+                <p key={index}>{paragraph}</p>
+              ))
+            )}
           </div>
         </article>
       </main>

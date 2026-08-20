@@ -131,3 +131,20 @@ export async function getSanityNews() {
     { cache: "no-store" },
   );
 }
+
+// Buscar notícia específica por Slug
+export async function getSanityNewsBySlug(slug: string) {
+  return await client.fetch(
+    groq`*[_type == "news" && slug.current == $slug][0] {
+      _id,
+      title,
+      "slug": slug.current,
+      category,
+      date,
+      excerpt,
+      content
+    }`,
+    { slug },
+    { cache: "no-store" },
+  );
+}

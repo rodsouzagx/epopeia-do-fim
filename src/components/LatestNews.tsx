@@ -1,7 +1,22 @@
 import Link from "next/link";
+import { getSanityNews } from "../sanity/queries";
 import { LATEST_NEWS, NewsItem } from "../data/news";
 
-export default function LatestNews() {
+export default async function LatestNews() {
+  // 1. Busca as notícias do Sanity
+  let newsList: any[] = [];
+  try {
+    newsList = await getSanityNews();
+  } catch (error) {
+    console.error("Erro ao carregar notícias do Sanity:", error);
+  }
+
+  // 2. Fallback para os dados estáticos caso o Sanity esteja vazio
+  const items = newsList && newsList.length > 0 ? newsList : LATEST_NEWS;
+
+  // Limita aos 2 comunicados mais recentes na Home
+  const recentNews = items.slice(0, 2);
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-12 border-t border-amber-500/10">
       {/* Cabeçalho */}
@@ -29,9 +44,9 @@ export default function LatestNews() {
 
       {/* Grid de Notícias */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {LATEST_NEWS.map((item: NewsItem) => (
+        {recentNews.map((item: any) => (
           <Link
-            key={item.id}
+            key={item._id || item.id || item.slug}
             href={`/noticias/${item.slug}`}
             className="group p-6 rounded-xl bg-slate-900/30 border border-slate-800 hover:border-amber-500/40 transition-all duration-300 hover:bg-slate-900/60 flex flex-col justify-between"
           >

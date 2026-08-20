@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { getSanityNews } from "../../sanity/queries";
 import { LATEST_NEWS, NewsItem } from "../../data/news";
 
 export const metadata = {
@@ -8,7 +9,16 @@ export const metadata = {
   description: "Comunicados oficiais, cronograma e novidades do universo de Epopeia do Fim.",
 };
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  let sanityNews: any[] = [];
+  try {
+    sanityNews = await getSanityNews();
+  } catch (error) {
+    console.error("Erro ao carregar notícias do Sanity:", error);
+  }
+
+  const newsList = sanityNews && sanityNews.length > 0 ? sanityNews : LATEST_NEWS;
+
   return (
     <div className="flex flex-col min-h-screen bg-[#070b14] text-slate-100">
       <Header />
@@ -32,9 +42,9 @@ export default function NewsPage() {
 
         {/* Lista de Notícias */}
         <div className="flex flex-col gap-6">
-          {LATEST_NEWS.map((item: NewsItem) => (
+          {newsList.map((item: any) => (
             <Link
-              key={item.id}
+              key={item._id || item.id || item.slug}
               href={`/noticias/${item.slug}`}
               className="group cursor-pointer p-6 md:p-8 rounded-2xl bg-slate-900/30 border border-slate-800 hover:border-amber-500/40 hover:bg-slate-900/60 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6"
             >
